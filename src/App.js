@@ -24,6 +24,8 @@ class App extends React.Component {
         { value: "personel", abbr: "pers" },
         { value: "member", abbr: "mbr" }
       ],
+      abbreviationTable:[{ value: "personel", abbr: "pers" },
+      { value: "member", abbr: "mbr" }],
       bulletType: "OPR",
       tabValue: 0,
       drawerOpen: false,
@@ -42,6 +44,7 @@ class App extends React.Component {
     if(settings !== null)
     {
       this.setState({abbreviationData: settings.abbreviationData})
+      this.setAbbreviationTable(settings.abbreviationData);
     }
   }
 
@@ -72,10 +75,19 @@ class App extends React.Component {
 
   onAbbreviationTableChange = (newAbbreviationData) => {
    
-    const { abbreviationData: abreviationData } = this.state;
-    console.log(newAbbreviationData);
-    let settings = {abbreviationData:abreviationData}
+    const { abbreviationData } = this.state;
+    
+    this.setAbbreviationTable(abbreviationData);
+
+    console.log(abbreviationData);
+    let settings = {abbreviationData:abbreviationData}
     this.saveSettings(settings)
+  }
+
+  setAbbreviationTable = (abreviationData) =>{
+    let newTable = abreviationData.filter((row)=>row.value !== null && row.abbr !== null);
+
+    this.setState({abbreviationTable:newTable})
   }
 
   handleTextAreaUpdate = (text) => {
@@ -157,7 +169,6 @@ class App extends React.Component {
               </Button>
               </div>
 
-
               <Typography variant="h6" component="h2">
                 Smart Bullet Editor
               </Typography>
@@ -165,7 +176,7 @@ class App extends React.Component {
               <BulletEditor
                 inputBullets={this.state.bulletInputText}
                 updateInputText={this.handleTextAreaUpdate}
-                abbreviationData={this.state.abbreviationData} 
+                abbreviationData={this.state.abbreviationTable} 
                 width={widthSetting}
                 />
                 

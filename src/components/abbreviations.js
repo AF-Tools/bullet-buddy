@@ -30,7 +30,8 @@ const tableSettings = {
         indicator: true
     },
     autoColumnSize: false,
-    minRows: 5,
+    minRows: 2,
+    minSpareRows:1,
     contextMenu: true,
     licenseKey: 'non-commercial-and-evaluation',
     search: {

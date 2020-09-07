@@ -35,7 +35,7 @@ class Word extends React.Component {
   }
 
   getAbbreviations = word => {
-
+    if(this.props.abbreviationData === null){return null}
     // extract dictionary
     const abbreviation = this.props.abbreviationData.find((row) => row.abbr === word.toLowerCase() | row.value.toLowerCase() === word.toLowerCase());
 

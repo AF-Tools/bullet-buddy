@@ -27,8 +27,13 @@ class AcronymViewer extends React.Component {
             return "no acronyms yet";
         }
         acs = acs.sort();
+        let alreadyAdded = [];
         acs = acs.map((acs)=>{
-          return "< > (" + acs + ");";
+            if(alreadyAdded.indexOf(acs) === -1){
+                alreadyAdded.push(acs)
+                return " (" + acs + "); ";
+            }
+          return;
         })
         return acs;
       }
