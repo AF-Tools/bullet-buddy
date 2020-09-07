@@ -1,4 +1,0 @@
-1. Add thesaurus replace on hover
-2. Output view should look like 1206/EPR/Etc
-4. Autohighlght acronym/abbreviations that are approved
-5. autogen the acronym list in alphabetical order
