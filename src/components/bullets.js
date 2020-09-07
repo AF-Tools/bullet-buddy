@@ -1,0 +1,668 @@
+import React from 'react';
+import Button from '@material-ui/core/Button';
+import Axios from 'axios';
+
+
+import Icon from '@material-ui/core/Icon';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
+import { render } from '@testing-library/react';
+class Word extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      anchorE1: null,
+      synonyms: null,
+      isEditable: null,
+    };
+
+    this.handlePopoverClose = this.handlePopoverClose.bind(this);
+    this.handlePopoverOpen = this.handlePopoverOpen.bind(this);
+  }
+  handlePopoverOpen = (event) => {
+    this.setState({ open: true })
+  };
+
+  handlePopoverClose = () => {
+    this.setState({ open: false })
+  }
+
+  isNotEditable = word => {
+    return word.match(/([A-Z]{2,})/) != null
+      | word.match(/([0-9])/) != null
+      | word.length <= 2
+      | (this.props.index < 1);
+  }
+
+  getAbbreviations = word => {
+
+    // extract dictionary
+    const abbreviation = this.props.abbreviationData.find((row) => row.abbr === word.toLowerCase() | row.value.toLowerCase() === word.toLowerCase());
+
+    return typeof abbreviation === "undefined" ? null : abbreviation;
+  }
+
+  getSynonyms = (word) => {
+    //console.log("Attempting to get synonyms for: " + word)
+    Axios.get("https://api.datamuse.com/words?max=15&ml=" + word)
+      .then(res => {
+        if (res.status === 200) {
+          const data = res.data;
+          if (data.length !== 0) {
+
+            const all = data.map((item) => {
+              return item.word
+            });
+            //console.log(all)
+            this.setState({ synonyms: all })
+          }
+        } else {
+          console.log(`Failed to fetch synonyms: ${res}`);
+        }
+      })
+      .catch(err => {
+        console.log(`ERR: ${JSON.toString(err)}`);
+      });
+  }
+
+  componentDidMount() {
+
+    if (this.isNotEditable(this.props.value)) {
+      this.setState({ isEditable: false })
+    } else {
+      this.getSynonyms(this.props.value);
+      this.setState({ isEditable: true })
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.value !== prevProps.value && this.state.isEditable) {
+      this.getSynonyms(this.props.value);
+    }
+  }
+  render() {
+    let word = this.props.value;
+
+    let c = "bullet-editor-word-editable";
+
+    // Check if abbreviable
+    const abbrvData = this.getAbbreviations(word);
+
+    if (abbrvData !== null) {
+
+      if (abbrvData.value.toLowerCase() === word.toLowerCase()) { // Abbreviable word
+        c = c + " abbreviable popup"
+        return (
+          <span
+            className={c}
+            onMouseEnter={this.handlePopoverOpen}
+            onMouseLeave={this.handlePopoverClose}
+          >
+            {word}
+            <span className={this.state.open ? "popuptext show" : "popuptext"} >
+              <ul className="popuptextlist">
+                <li
+                  className="synonym-button"
+                  onClick={() => this.props.changeWord(abbrvData.abbr, this.props.parentIndex)}
+                >{abbrvData.abbr}
+                </li>
+              </ul>
+            </span>
+          </span>
+        );
+      }
+
+      if (abbrvData.abbr === word) {
+        // Already abbreviated word
+        c = c + " approved-abbreviation popup"
+        return (
+          <span
+            className={c}
+            onMouseEnter={this.handlePopoverOpen}
+            onMouseLeave={this.handlePopoverClose}
+
+          >
+            {word}
+            <span className={this.state.open ? "popuptext show" : "popuptext"} >
+              <ul className="popuptextlist">
+                <li
+                  className="synonym-button"
+                  onClick={() => this.props.changeWord(abbrvData.value.toLowerCase(), this.props.parentIndex)}
+                >{abbrvData.value}
+                </li>
+              </ul>
+            </span>
+          </span>
+        );
+      }
+    }
+
+    if (this.isNotEditable(word)) {
+      c = "bullet-editor-word popup";
+      return (<span className={c}>{word}</span>);
+    }
+
+    c = c + " popup";
+
+    let synList = null;
+    if (this.state.synonyms !== null) {
+      synList = this.state.synonyms.map(syn =>
+        <li
+          className="synonym-button"
+          onClick={() => this.props.changeWord(syn, this.props.parentIndex)}
+        >{syn}</li>
+      )
+    }
+
+    return (
+
+      <span
+        className={c}
+        onMouseEnter={this.handlePopoverOpen}
+        onMouseLeave={this.handlePopoverClose}
+
+      >
+        {word}
+        <span className={this.state.open ? "popuptext show" : "popuptext"} >
+          <ul className="popuptextlist">{synList}</ul>
+        </span>
+      </span>
+    );
+
+  }
+}
+
+class Bullet extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      indexOfColon: null,
+      indexOfDashes: null,
+    };
+    this.changeWord = this.changeWord.bind(this);
+  }
+
+  componentDidMount() {
+    //this.setState({ bullet: this.updateBullet(this.props.text) })
+  }
+
+  componentDidUpdate(prevProps) {
+    // if (this.props.text !== prevProps.text) {
+    //   this.setState({ bullet: this.updateBullet(this.props.text) })
+    // }
+  }
+
+  tokenize = (text) => {
+    let output = [];
+
+
+    if (text.match(';') !== null && text.match(/-{2}/) !== null) {
+      // First extract A;I--R
+      let [action, impact, result] = text.split(/;|-{2}/);
+      //console.log(`action: ${action} impact: ${impact} result: ${result}`)
+
+      // Then split each up by spaces
+      action = action.split(/[\s]/);
+      impact = impact.split(/[\s]/);
+      result = result.split(/[\s]/);
+
+      // Recombine w/ spaces in right spots.
+      output = [...action, ";", ...impact, "--", ...result];
+    } else {
+      // We have some strange input so split on any end punctuations
+      output = text.split(/\s/);
+    }
+    return output;
+  }
+
+  tweak = (sentence) => {
+    // adds a 0-width space (\u200B) after forward slashes to cause them to wrap
+    sentence = sentence.replace(/(\w)\//g, '$1/\u200B');
+
+    // adds a non-breaking dash (\u2011) instead of a dash to prevent wrapping
+    sentence = sentence.replace(/-/g, '\u2011');
+    return sentence;
+  }
+
+  updateBullet = (text) => {
+    let words = this.tokenize(text);
+    return words;
+  }
+
+  changeWord = (newWord, i) => {
+    let newBullet = this.tokenize(this.props.text);
+    newBullet[i] = newWord;
+    this.props.updateBulletText(newBullet.join(' '), this.props.parentIndex);
+    console.log("bullet change:" + newBullet.join(' '))
+  }
+
+  render() {
+    const { text } = this.props;
+    let bullet = this.tokenize(text);
+    return (
+
+      bullet.map((word, i) => {
+        return (
+          <Word value={word} parentIndex={i} changeWord={this.changeWord} abbreviationData={this.props.abbreviationData} />
+        );
+      })
+    );
+  }
+}
+
+class BulletEditor extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      bullets: [],
+
+    };
+    this.ref = React.createRef();
+    this.updateBulletText = this.updateBulletText.bind(this);
+  }
+
+  componentDidMount() {
+    this.setState({ bullets: this.extractBullets(this.props.inputBullets) })
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.inputBullets !== prevProps.inputBullets) {
+      this.setState({ bullets: this.extractBullets(this.props.inputBullets) })
+    }
+  }
+
+  extractBullets = text => {
+    let bullets = text.split(/-\s{1}/);
+    bullets.shift();
+    bullets = bullets.map((bullet) => {
+      return bullet = "- " + bullet.trim();
+    });
+    return bullets;
+  }
+
+  updateBulletText = (newText, i) => {
+    let bullets = this.state.bullets;
+    bullets[i] = newText;
+    bullets.join(' ');
+    bullets[i] = bullets[i].replace(/\s;\s/, ";");
+    bullets[i] = bullets[i].replace(/\s-{2}\s/, "--");
+    bullets[i] = "- " + bullets[i].charAt(2).toUpperCase() + bullets[i].slice(3);
+    console.log("bullet round 2: " + bullets[i])
+    this.props.updateInputText(bullets.join('\n'));
+  }
+  onChange = (e, i) => {
+
+    let c = e.nativeEvent.target.childNodes;
+    c = Array.from(c).map(node => {
+      return node.innerText;
+    })
+
+    let oldSel = window.getSelection();
+
+    this.updateBulletText(c.join(' '), i);
+
+
+    console.log(window.getSelection())
+  }
+  render() {
+
+    return (
+      <div>
+        <div className="bullet-editor" style={{ width: this.props.width }}>
+          {
+            // Creat a bullet around each bullet
+            this.state.bullets.map((bullet, i) => {
+
+              return (
+                <span
+                  ref={this.ref}
+                  className="bullet-editor-bullet">
+                  <Bullet text={bullet} updateBulletText={this.updateBulletText} parentIndex={i} abbreviationData={this.props.abbreviationData} />
+                </span>
+              );
+            })
+          }
+        </div>
+        <div className="legend">Legend: 
+          <span className="approved-abbreviation">Approved Abbreviation</span>
+          <span className="abbreviable">Abbreviable Word</span>
+          <span className="bullet-editor-word-editable">Synonyms Available</span>
+        </div>
+      </div>
+      
+    );
+  }
+}
+
+
+const smallSpace = "\u2006";
+const largeSpace = "\u2004";
+
+class BulletOutputViewerBullet extends React.Component {
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef()
+    this.state = {
+      idealHeight: null,
+      idealWidth: null,
+      optimized: false,
+      bulletText: null,
+    };
+    this.processing = false;
+    this.processed = false;
+  }
+  componentDidMount() {
+    this.setState({ bulletText: this.props.bulletText })
+    //this.evaluateBullet()
+    console.log("did mount")
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    const { currentBulletText } = this.state;
+    const { width } = this.props;
+
+    let newBulletText = (prevState.bulletText !== currentBulletText && currentBulletText !== null);
+
+    // We have a props update, clear everything and start over
+    if (this.props.bulletText !== prevProps.bulletText | width !== prevProps.width) {
+      console.log("did update with new props")
+      this.processing = false;
+      this.processed = false;
+      this.setState({ bulletText: this.props.bulletText, optimized: false })
+    } else if (newBulletText && !this.processing && !this.processed) {
+      console.log("did update with new state to process"); 
+      this.optimizeBullet();
+      this.props.handleBulletChange(this.state.bulletText, this.props.index);
+    }
+  }
+
+  xToPx = (x) => {
+    let div = document.createElement('div');
+    div.style.display = 'block';
+    div.style.height = x;
+    document.body.appendChild(div);
+    let px = parseFloat(window.getComputedStyle(div, null).height);
+    div.parentNode.removeChild(div);
+    return px;
+  }
+
+  evaluateBullet = () => {
+
+    if (this.ref === null) { return }
+
+    const node = this.ref.current;
+    const parentNode = node.parentNode;
+
+    let idealWidth = this.xToPx(this.props.width);
+
+    // // Undo wrapping so we get the single line height
+    // node.style.whiteSpace = 'nowrap';
+
+    // let idealHeight = node.getBoundingClientRect().height;
+    let oldPWidth = parentNode.style.width;
+    parentNode.style.width = "800.00mm";
+
+    const { width, height } = node.getBoundingClientRect();
+
+    // // Re-enable wrapping
+    // node.style.whiteSpace = 'pre-wrap';
+    // node.style.wordBreak = "break-word";
+    parentNode.style.width = oldPWidth;
+
+    let widthDiff = (width - idealWidth);
+
+    // if (height > idealHeight + 2) {
+    //   wrapped = true;
+    // }
+
+    
+    //console.log(`bullet width difference: ${widthDiff}`)
+    return { "widthDiff": widthDiff };
+  }
+
+  getSmallestBullet = (text) => {
+    let output = text.split(/\s/);
+    output.shift(); // remove hypen then add later
+    output = output.join(smallSpace);
+    return "- " + output.trim();
+  }
+  getLargestBullet = (text) => {
+    let output = text.split(/\s/);
+    output.shift(); // remove hypen then add later
+    output = output.join(largeSpace);
+    return "- " + output.trim();
+  }
+  setStateAsync(state) {
+    return new Promise((resolve) => {
+      this.setState(state, resolve)
+    });
+  }
+  async optimizeBullet() {
+    let bullet = this.state.bulletText;
+    if (bullet === null) { return; }
+    this.processing = true;
+    //console.log("building bullet: ." + bullet);
+
+    let smallestBullet = this.getSmallestBullet(bullet);
+    await this.setStateAsync({ bulletText: smallestBullet })
+    let smallestBulletEval = this.evaluateBullet();
+
+    if (smallestBulletEval.widthDiff > 0) {
+
+      //console.log("bullet to large: ." + bullet);
+      this.processed = true;
+      this.processing = false;
+
+      return;
+    }
+
+    //console.log("phase 2 of bullet: ." + bullet);
+    let largestBullet = this.getLargestBullet(bullet);
+    await this.setStateAsync({ bulletText: largestBullet })
+    let largestBulletEval = this.evaluateBullet();
+
+    if (largestBulletEval.widthDiff <= 0) {
+      // Bullet optimized but it may not touch the line lol
+      //console.log("Bullet with all large spaces: " + bullet);
+      this.processed = true;
+      this.processing = false;
+      return;
+    }
+
+    // If we made it here then we can work with this bullet more
+    //console.log("can be optimized further: " + smallestBullet)
+
+    let spaceIndexes = [];
+
+    // Find position of all space chars
+    Array.from(smallestBullet).map((word, i) => {
+      if (word.match(/\s/)) {
+        spaceIndexes.push(i);
+      }
+      return;
+    });
+    spaceIndexes.shift(); // remove the first space since we dont want to add one after hypen
+
+    let terminate = false;
+    let prevEval = smallestBulletEval;
+    let useIndexs = [];
+    let action = 0;
+    let len = spaceIndexes.length;
+    let prevBullet = smallestBullet;
+
+    // Shuffel up the space replacement
+    for (let i = 0; i < len; i++) {
+      switch (action) {
+        case 0: useIndexs.push(spaceIndexes.shift());
+          break;
+
+        case 1: useIndexs.push(spaceIndexes.pop());
+          break;
+
+        case 2: useIndexs.push(spaceIndexes.pop());
+          break;
+
+        default:
+          break;
+      }
+      action += 1;
+      if (action === 3) { action = 0; }
+    }
+
+    while (!terminate) {
+      if (useIndexs.length === 0) {
+        //console.log("exhausted all index values")
+        terminate = true;
+        continue;
+      }
+
+      const space = (prevEval.widthDiff < 0) ? largeSpace : smallSpace;
+
+      // Replace the index with the appropriate space char
+      let i = useIndexs.shift();
+      smallestBullet = smallestBullet.substring(0, i) + space + smallestBullet.substring(i + 1);
+      console.log("new bullet iteration: " + smallestBullet);
+      // Re-evalute the size attributes
+      await this.setStateAsync({ bulletText: smallestBullet });
+      let currentEval = this.evaluateBullet();
+
+      if (currentEval.widthDiff < 0) {
+        // Still room to go.
+        prevEval = currentEval;
+        prevBullet = smallestBullet;
+        continue;
+      }
+
+      if (currentEval.widthDiff > 0) {
+        // Grew to big keep the old bullet
+        smallestBullet = prevBullet;
+        terminate = true;
+      }
+    }
+
+    // If we get here we should be optimized!
+    this.processed = true;
+    this.processing = false;
+    this.setState({ bulletText: smallestBullet, optimized: true });
+
+    return (bullet);
+  }
+  tweak = (sentence) => {
+    // adds a 0-width space (\u200B) after forward slashes to cause them to wrap
+    sentence = sentence.replace(/(\w)\//g, '$1/\u200B');
+
+    // adds a non-breaking dash (\u2011) instead of a dash to prevent wrapping
+    sentence = sentence.replace(/-/g, '\u2011');
+    return sentence;
+  }
+  render() {
+
+    const { optimized } = this.state;
+    let className = optimized ? "bullet-output-bullet optimized" : "bullet-output-bullet notoptimized";
+    return (
+
+      <div className={className} ref={this.ref}>
+        {this.state.bulletText}
+      </div>
+    );
+  }
+}
+
+class BulletOutputViewer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      bullets: [],
+    };
+    this.ref = React.createRef();
+  }
+
+  componentDidMount() {
+    console.log(this.props.bulletsText)
+    this.setState({ bullets: this.extractBullets(this.props.bulletsText) })
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.bulletsText !== prevProps.bulletsText) {
+      this.setState({ bullets: this.extractBullets(this.props.bulletsText) })
+    }
+  }
+
+  extractBullets = text => {
+    let bullets = text.split(/-\s{1}/);
+    bullets.shift();
+    bullets = bullets.map((bullet) => {
+      return bullet = "- " + bullet.trim() + '\r\n';
+    });
+    return bullets;
+  }
+
+  handleSelectionCopy = e => {
+    e.preventDefault();
+    let text = window.getSelection().toString();
+    text = this.extractBullets(text);
+    text = text.join('');
+    text.replace(/\n/g, '\r\n'); //need this for WINDOWS!
+    console.log('Copy event: ' + text)
+    e.clipboardData.setData('text/plain', text);
+
+  }
+
+  handleCopyButtonClick = (e) => {
+    let range = document.createRange();
+    range.selectNode(this.ref.current);
+    window.getSelection().removeAllRanges(); // clear current selection
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges(); // clear current selection
+  }
+
+  handleBulletChange = (newText, i) => {
+    let bullets = this.state.bullets;
+    bullets[i] = newText;
+    this.setState({ bullets: bullets })
+  }
+
+  render() {
+
+    return (
+      <div>
+        <div className="bullet-output-container" style={{ width: this.props.width }}
+          onCopy={this.handleSelectionCopy}>
+          <p>XX. AMAZING BULLETS <mark>(Dont forget to copy to the right place!)</mark></p>
+          <div ref={this.ref}>
+            {
+              
+              // Create a bullet around each bullet
+              this.state.bullets.map((bullet, i) => {
+
+                return (<BulletOutputViewerBullet
+                  width={this.props.width}
+                  bulletText={bullet}
+                  index={i}
+                  handleBulletChange={this.handleBulletChange}
+
+                />);
+              })
+            }
+          </div>
+          
+        </div>
+        <Button
+          variant="outlined"
+          color="primary"
+          size="small"
+          onClick={(e) => this.handleCopyButtonClick(e)}
+          startIcon={<FileCopyIcon />}
+        >
+          Copy Bullets to Clipboard
+        </Button>
+      </div>
+    );
+  }
+}
+
+export { BulletOutputViewer, BulletEditor }
+export default BulletEditor;

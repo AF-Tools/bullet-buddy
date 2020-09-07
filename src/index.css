@@ -1,13 +1,228 @@
-body {
+@font-face {
+  font-family: "AdobeTimes";
+  src: url("./TimesNewRomanPSMT.ttf");
+}
+@import './handsontable.min.css';
+html{
+  background-color: #f5f5f5;
+}
+.root{
+  position: relative;
+  min-height: 97vh;
+}
+.content{
+  padding-bottom: 1rem;
+}
+.title{
+  flex-grow: 1;
+}
+.app-bar{
+  margin-bottom: 20px;
+}
+.app-bar-tabs{
+  right: 0;
+  position: absolute;
+}
+.main-content{
+  padding-top: 10px;
+  text-align: left;
+}
+.bullet-input-text{
+  font-family: "AdobeTimes";
+  font-size: 12pt;
+  white-space:pre-wrap;
+  display:inline;
+  text-rendering: geometricPrecision;
+  resize: none;
+  white-space: pre-line;
+  text-indent: 0px;
+  padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  overflow: block;
+  /* -ms-overflow-style: none;  /* IE and Edge */
+  /* scrollbar-width: none;  Firefox */ 
+}
+/* .bullet-input-text::-webkit-scrollbar{
+  display: none;
+} */
+.bullet-editor{
+  min-height: 1em;
+  text-align: left;
+  width: fit-content;
+  background-color: white;
+  padding: 5px;
+  border: solid black 1.1px;
+}
+.legend{
+  width: fit-content;
+  padding-top: 10px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.bullet-editor-bullet{
+  display: block;
+  padding: 0.2em;
+  margin: .2em;
+  box-shadow: 0 0 2px black;
 }
+.bullet-editor-word{
+  margin: 1px;
+}
+.bullet-editor-word-editable{
+  margin: 1px;
+  cursor: pointer;
+  background-color: #c8abe99b;
+  /* border: solid black 1px;
+  border-radius: 3px; */
+}
+.approved-abbreviation{
+  margin: 1px;
+  cursor: pointer;
+  background-color: rgba(0, 128, 0, 0.507);
+}
+.abbreviable{
+  margin: 1px;
+  cursor: pointer;
+  background-color: rgba(70, 0, 128, 0.507);
+}
+.bullet-output-container{
+  border: solid black 1.1px;
+  text-align: left;
+  width: fit-content;
+  background-color: white;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  min-height: 3em;
+}
+.bullet-output-container p{
+  padding-top: 0px;
+  margin: -1px;
+  padding: 1px;
+  border-color: black;
+  border: solid black 1.1px;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-weight: bold;
+}
+.bullet-output-container mark{
+  font-style: italic;
+  font-weight: normal;
+  background-color: inherit;
+  
+}
+.bullet-output-bullet{
+    font-family: "AdobeTimes";
+    /* font-family: 'Times New Roman'; */
+    font-size: 12pt;
+    white-space:pre-wrap;
+    display:inline-block;
+    text-rendering: geometricPrecision;
+}
+
+.bullet-output-bullet.optimized{
+  background-color: rgba(0, 128, 0, 0.246);
+}
+.bullet-output-bullet.notoptimized{
+  background-color: rgba(255, 0, 0, 0.253);
+}
+
+/* Popup container - can be anything you want */
+.popup {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* The actual popup */
+.popup .popuptext {
+  visibility: hidden;
+  width: 160px;
+  background-color:#555;
+  color: #fff;
+  text-align: center;
+  border-radius: 3px;
+  padding: 2px 0;
+  padding-top: 5px;
+  margin-top: -5px;
+  position: absolute;
+  z-index: 999;
+  top: 170%;
+  left: 50%;
+  margin-left: -80px;
+  list-style-type: none;
+}
+.popuptextlist{
+  list-style-type: none;
+  padding: .1px;
+  margin: 1px;
+}
+/* Popup arrow */
+.popup .popuptext::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  margin-left: -20px;
+  width: 40px;
+  height: 10px;
+  background-color: transparent;
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+  visibility: visible;
+  -webkit-animation: fadeIn .5s;
+  animation: fadeIn .5s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;} 
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+}
+
+.synonym-button{
+  padding: 2px;
+  
+}
+.synonym-button:hover{
+  background-color: sandybrown;
+}
+.highlight{
+  background-color: yellow;
+}
+.drawer{
+  height: 50vh;
+}
+.drawer-header{
+  background-color: #3f51b5;
+  padding: 10px;
+  color: white;
+}
+.abbreviation-table{
+  margin: auto;
+  margin-top: 20px;
+}
+
+.bottom-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  bottom: 0;
+  font-family: 'Segoe UI';
+  font-size: .6em;
+  height: 1rem;
+} 
+.bottom-text p{
+  padding: 1px;
+  margin: 0;
+} 
