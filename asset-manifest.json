@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/bullet-buddy/static/css/main.e6cb4627.chunk.css",
-    "main.js": "/bullet-buddy/static/js/main.2898bc48.chunk.js",
-    "main.js.map": "/bullet-buddy/static/js/main.2898bc48.chunk.js.map",
+    "main.js": "/bullet-buddy/static/js/main.1d2e7d52.chunk.js",
+    "main.js.map": "/bullet-buddy/static/js/main.1d2e7d52.chunk.js.map",
     "runtime-main.js": "/bullet-buddy/static/js/runtime-main.7258ff3e.js",
     "runtime-main.js.map": "/bullet-buddy/static/js/runtime-main.7258ff3e.js.map",
     "static/js/2.65843308.chunk.js": "/bullet-buddy/static/js/2.65843308.chunk.js",
     "static/js/2.65843308.chunk.js.map": "/bullet-buddy/static/js/2.65843308.chunk.js.map",
     "index.html": "/bullet-buddy/index.html",
-    "precache-manifest.2237dc7d9312ac282d8ff15c4cc877ca.js": "/bullet-buddy/precache-manifest.2237dc7d9312ac282d8ff15c4cc877ca.js",
+    "precache-manifest.ce705a9a7ee02612fe2d2a48e00c1e8c.js": "/bullet-buddy/precache-manifest.ce705a9a7ee02612fe2d2a48e00c1e8c.js",
     "service-worker.js": "/bullet-buddy/service-worker.js",
     "static/css/main.e6cb4627.chunk.css.map": "/bullet-buddy/static/css/main.e6cb4627.chunk.css.map",
     "static/js/2.65843308.chunk.js.LICENSE.txt": "/bullet-buddy/static/js/2.65843308.chunk.js.LICENSE.txt",
@@ -18,6 +18,6 @@
     "static/js/runtime-main.7258ff3e.js",
     "static/js/2.65843308.chunk.js",
     "static/css/main.e6cb4627.chunk.css",
-    "static/js/main.2898bc48.chunk.js"
+    "static/js/main.1d2e7d52.chunk.js"
   ]
 }
