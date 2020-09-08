@@ -43,7 +43,7 @@ class Word extends React.Component {
   }
 
   getSynonyms = (word) => {
-    //console.log("Attempting to get synonyms for: " + word)
+    ////console.log("Attempting to get synonyms for: " + word)
     Axios.get("https://api.datamuse.com/words?max=15&ml=" + word)
       .then(res => {
         if (res.status === 200) {
@@ -53,15 +53,15 @@ class Word extends React.Component {
             const all = data.map((item) => {
               return item.word
             });
-            //console.log(all)
+            ////console.log(all)
             this.setState({ synonyms: all })
           }
         } else {
-          console.log(`Failed to fetch synonyms: ${res}`);
+          //console.log(`Failed to fetch synonyms: ${res}`);
         }
       })
       .catch(err => {
-        console.log(`ERR: ${JSON.toString(err)}`);
+        //console.log(`ERR: ${JSON.toString(err)}`);
       });
   }
 
@@ -199,7 +199,7 @@ class Bullet extends React.Component {
     if (text.match(';') !== null && text.match(/-{2}/) !== null) {
       // First extract A;I--R
       let [action, impact, result] = text.split(/;|-{2}/);
-      //console.log(`action: ${action} impact: ${impact} result: ${result}`)
+      ////console.log(`action: ${action} impact: ${impact} result: ${result}`)
 
       // Then split each up by spaces
       action = action.split(/[\s]/);
@@ -233,7 +233,7 @@ class Bullet extends React.Component {
     let newBullet = this.tokenize(this.props.text);
     newBullet[i] = newWord;
     this.props.updateBulletText(newBullet.join(' '), this.props.parentIndex);
-    console.log("bullet change:" + newBullet.join(' '))
+    //console.log("bullet change:" + newBullet.join(' '))
   }
 
   render() {
@@ -288,7 +288,7 @@ class BulletEditor extends React.Component {
     bullets[i] = bullets[i].replace(/\s;\s/, ";");
     bullets[i] = bullets[i].replace(/\s-{2}\s/, "--");
     bullets[i] = "- " + bullets[i].charAt(2).toUpperCase() + bullets[i].slice(3);
-    console.log("bullet round 2: " + bullets[i])
+    //console.log("bullet round 2: " + bullets[i])
     this.props.updateInputText(bullets.join('\n'));
   }
   onChange = (e, i) => {
@@ -303,7 +303,7 @@ class BulletEditor extends React.Component {
     this.updateBulletText(c.join(' '), i);
 
 
-    console.log(window.getSelection())
+    //console.log(window.getSelection())
   }
   render() {
 
@@ -355,7 +355,7 @@ class BulletOutputViewerBullet extends React.Component {
   componentDidMount() {
     this.setState({ bulletText: this.props.bulletText })
     //this.evaluateBullet()
-    console.log("did mount")
+    //console.log("did mount")
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -367,12 +367,12 @@ class BulletOutputViewerBullet extends React.Component {
 
     // We have a props update, clear everything and start over
     if (this.props.bulletText !== prevProps.bulletText | width !== prevProps.width) {
-      console.log("did update with new props")
+      //console.log("did update with new props")
       this.processing = false;
       this.processed = false;
       this.setState({ bulletText: this.props.bulletText, optimized: false })
     } else if (newBulletText && !this.processing && !this.processed) {
-      console.log("did update with new state to process"); 
+      //console.log("did update with new state to process"); 
       this.optimizeBullet();
       this.props.handleBulletChange(this.state.bulletText, this.props.index);
     }
@@ -418,7 +418,7 @@ class BulletOutputViewerBullet extends React.Component {
     // }
 
     
-    //console.log(`bullet width difference: ${widthDiff}`)
+    ////console.log(`bullet width difference: ${widthDiff}`)
     return { "widthDiff": widthDiff };
   }
 
@@ -443,7 +443,7 @@ class BulletOutputViewerBullet extends React.Component {
     let bullet = this.state.bulletText;
     if (bullet === null) { return; }
     this.processing = true;
-    //console.log("building bullet: ." + bullet);
+    ////console.log("building bullet: ." + bullet);
 
     let smallestBullet = this.getSmallestBullet(bullet);
     await this.setStateAsync({ bulletText: smallestBullet })
@@ -451,28 +451,28 @@ class BulletOutputViewerBullet extends React.Component {
 
     if (smallestBulletEval.widthDiff > 0) {
 
-      //console.log("bullet to large: ." + bullet);
+      ////console.log("bullet to large: ." + bullet);
       this.processed = true;
       this.processing = false;
 
       return;
     }
 
-    //console.log("phase 2 of bullet: ." + bullet);
+    ////console.log("phase 2 of bullet: ." + bullet);
     let largestBullet = this.getLargestBullet(bullet);
     await this.setStateAsync({ bulletText: largestBullet })
     let largestBulletEval = this.evaluateBullet();
 
     if (largestBulletEval.widthDiff <= 0) {
       // Bullet optimized but it may not touch the line lol
-      //console.log("Bullet with all large spaces: " + bullet);
+      ////console.log("Bullet with all large spaces: " + bullet);
       this.processed = true;
       this.processing = false;
       return;
     }
 
     // If we made it here then we can work with this bullet more
-    //console.log("can be optimized further: " + smallestBullet)
+    ////console.log("can be optimized further: " + smallestBullet)
 
     let spaceIndexes = [];
 
@@ -495,14 +495,16 @@ class BulletOutputViewerBullet extends React.Component {
     // Shuffel up the space replacement
     for (let i = 0; i < len; i++) {
       switch (action) {
-        case 0: useIndexs.push(spaceIndexes.shift());
-          break;
+        case 0: useIndexs.push(spaceIndexes.shift()); 
+          break;// change space towards begining
 
         case 1: useIndexs.push(spaceIndexes.pop());
-          break;
+          break;// Chjange space towards end
 
-        case 2: useIndexs.push(spaceIndexes.pop());
-          break;
+        case 2: 
+          let val = spaceIndexes.splice(Math.floor(spaceIndexes.length/2),1)
+          useIndexs.push(val[0]);
+          break; // Change space in the middle
 
         default:
           break;
@@ -513,7 +515,7 @@ class BulletOutputViewerBullet extends React.Component {
 
     while (!terminate) {
       if (useIndexs.length === 0) {
-        //console.log("exhausted all index values")
+        ////console.log("exhausted all index values")
         terminate = true;
         continue;
       }
@@ -523,7 +525,7 @@ class BulletOutputViewerBullet extends React.Component {
       // Replace the index with the appropriate space char
       let i = useIndexs.shift();
       smallestBullet = smallestBullet.substring(0, i) + space + smallestBullet.substring(i + 1);
-      console.log("new bullet iteration: " + smallestBullet);
+      //console.log("new bullet iteration: " + smallestBullet);
       // Re-evalute the size attributes
       await this.setStateAsync({ bulletText: smallestBullet });
       let currentEval = this.evaluateBullet();
@@ -580,7 +582,7 @@ class BulletOutputViewer extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props.bulletsText)
+    //console.log(this.props.bulletsText)
     this.setState({ bullets: this.extractBullets(this.props.bulletsText) })
   }
 
@@ -605,7 +607,7 @@ class BulletOutputViewer extends React.Component {
     text = this.extractBullets(text);
     text = text.join('');
     text.replace(/\n/g, '\r\n'); //need this for WINDOWS!
-    console.log('Copy event: ' + text)
+    //console.log('Copy event: ' + text)
     e.clipboardData.setData('text/plain', text);
 
   }
