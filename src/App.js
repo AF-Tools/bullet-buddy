@@ -86,7 +86,11 @@ class App extends React.Component {
 
   setAbbreviationTable = (abreviationData) =>{
     let newTable = abreviationData.filter((row)=>row.value !== null && row.abbr !== null);
-
+    newTable = newTable.map((row)=>{
+      row.abbr = row.abbr.trim();
+      row.value = row.value.trim();
+      return row;
+    })
     this.setState({abbreviationTable:newTable})
   }
 
