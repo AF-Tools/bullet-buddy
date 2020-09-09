@@ -17,7 +17,7 @@ const tableSettings = {
     maxRows: Infinity,
     manualRowResize: true,
     manualColumnResize: true,
-    rowHeaders: true,
+    rowHeaders: false,
     colHeaders: [
         'Word',
         'Abbreviation',
