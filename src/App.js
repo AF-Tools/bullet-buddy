@@ -209,16 +209,14 @@ class App extends React.Component {
           </div>
             <AbbreviationTable abbreviationData={this.state.abbreviationData} onAbbrevitionDataChange={this.onAbbreviationTableChange} />
           </Drawer>
-
           
         </Container>
                <div class="bottom-text">
-            <p>This site utilizes <a href="https://material-ui.com/"> Material-UI</a>, <a href="https://handsontable.com/">HandsOnTable</a>, and the <a href="https://www.datamuse.com/api/">DataMuse API</a></p>
+            <p>This site utilizes <a href="https://material-ui.com/"> Material-UI</a>, <a href="https://handsontable.com/">HandsOnTable</a>, and the <a href="https://www.datamuse.com/api/">DataMuse API</a> The inspiration for this tool came from the <a href="https://ea-pods-team.github.io/pdf-bullets/ "> EA-Pods Team pdf-bullets project</a></p>
             <p>Maintained by Nicholas Schweikart</p>
           </div> 
       </div>
     );
   }
 }
-
 export default App;
