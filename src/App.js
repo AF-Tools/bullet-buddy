@@ -19,13 +19,15 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      bulletInputText: "- Facilitated 152 SITREPs to NAF/ACC/JBSA; delivered oversight for 1,300 pers--vital to operations during pandemic\n- This tool can optimize spacing; output will be red if the optimizer could not fix spacing with 2004 or 2006 Unicode spaces\n",
+      bulletInputText: "- Action section of bullet should go here; put the how/what you did in this part--bring it home w/ a great impact line\n- You can upload your orgs approved abbreviations list (click button up top); they will be highlighted and are expdble\n- This tool can optimize spacing; output will be red if the optimizer could not fix spacing with 2004 or 2006 Unicode spaces\n",
       abbreviationData: [
-        { value: "personel", abbr: "pers" },
-        { value: "member", abbr: "mbr" }
+        { value: "organizations", abbr: "orgs" },
+        { value: "expandable", abbr: "expdble" },
       ],
-      abbreviationTable:[{ value: "personel", abbr: "pers" },
-      { value: "member", abbr: "mbr" }],
+      abbreviationTable:[
+      { value: "organizations", abbr: "orgs" },
+      { value: "expandable", abbr: "expdble" },
+      ],
       bulletType: "OPR",
       tabValue: 0,
       drawerOpen: false,
@@ -213,6 +215,7 @@ class App extends React.Component {
         </Container>
                <div class="bottom-text">
             <p>This site utilizes <a href="https://material-ui.com/"> Material-UI</a>, <a href="https://handsontable.com/">HandsOnTable</a>, and the <a href="https://www.datamuse.com/api/">DataMuse API</a> The inspiration for this tool came from the <a href="https://ea-pods-team.github.io/pdf-bullets/ "> EA-Pods Team pdf-bullets project</a></p>
+            <p>Submit an <a href="https://github.com/AF-Tools/bullet-buddy/issues/new/choose">issue</a> or view our <a href="https://github.com/AF-Tools/bullet-buddy/">GitHub Page</a></p>
             <p>Maintained by Nicholas Schweikart</p>
           </div> 
       </div>
