@@ -196,22 +196,33 @@ class Bullet extends React.Component {
     let output = [];
 
 
-    if (text.match(';') !== null && text.match(/-{2}/) !== null) {
-      // First extract A;I--R
-      let [action, impact, result] = text.split(/;|-{2}/);
-      ////console.log(`action: ${action} impact: ${impact} result: ${result}`)
+    // if (text.match(';') !== null && text.match(/-{2}/) !== null) {
+    //   // First extract A;I--R
+    //   let [action, impact, result] = text.split(/;|-{2}/);
+    //   ////console.log(`action: ${action} impact: ${impact} result: ${result}`)
 
-      // Then split each up by spaces
-      action = action.split(/[\s]/);
-      impact = impact.split(/[\s]/);
-      result = result.split(/[\s]/);
+    //   // Then split each up by spaces
+    //   action = action.split(/[\s]/);
+    //   impact = impact.split(/[\s]/);
+    //   result = result.split(/[\s]/);
 
-      // Recombine w/ spaces in right spots.
-      output = [...action, ";", ...impact, "--", ...result];
-    } else {
-      // We have some strange input so split on any end punctuations
-      output = text.split(/\s/);
-    }
+    //   // Recombine w/ spaces in right spots.
+    //   output = [...action, ";", ...impact, "--", ...result];
+    // } else {
+    //   // We have some strange input so split on any end punctuations
+    //   output = text.split(/\s/);
+    // }
+
+    text.split(/\s/).map(seg=>{
+      let innerSeg = seg.split(/([/;,-])/);
+      if (innerSeg.length === 1){
+        output.push(seg);
+      }else{
+        innerSeg.map(s=>{
+          if(s !== '') output.push(s);
+        })
+      }
+    })
     return output;
   }
 
