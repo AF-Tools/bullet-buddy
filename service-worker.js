@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/bullet-buddy/precache-manifest.2603143ce087fffa3e8909395ec297fd.js"
+  "/bullet-buddy/precache-manifest.3a0ae55fe4a61f7a699adfbe76f6b20a.js"
 );
 
 self.addEventListener('message', (event) => {
