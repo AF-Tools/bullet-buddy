@@ -336,8 +336,10 @@ class BulletEditor extends React.Component {
 }
 
 
-const smallSpace = "\u2006";
-const largeSpace = "\u2004";
+const smallSpace = "\u2006"; // 1/6 em space [same as thinspace: \u2009]
+const midSpace = "\u2005"; // 1/4 em space
+const normalSpace = ' ';
+const largeSpace = "\u2004"; // 1/3 em space (thick space)
 
 class BulletOutputViewerBullet extends React.Component {
   constructor(props) {
@@ -367,12 +369,12 @@ class BulletOutputViewerBullet extends React.Component {
 
     // We have a props update, clear everything and start over
     if (this.props.bulletText !== prevProps.bulletText | width !== prevProps.width) {
-      //console.log("did update with new props")
+      console.log("did update with new props")
       this.processing = false;
       this.processed = false;
       this.setState({ bulletText: this.props.bulletText, optimized: false })
     } else if (newBulletText && !this.processing && !this.processed) {
-      //console.log("did update with new state to process"); 
+      console.log("did update with new state to process"); 
       this.optimizeBullet();
       this.props.handleBulletChange(this.state.bulletText, this.props.index);
     }
@@ -421,7 +423,12 @@ class BulletOutputViewerBullet extends React.Component {
     ////console.log(`bullet width difference: ${widthDiff}`)
     return { "widthDiff": widthDiff };
   }
-
+  getNormalBullet = (text) => {
+    let output = text.split(/\s/);
+    output.shift(); // remove hypen then add later
+    output = output.join(' ');
+    return "- " + output.trim();
+  }
   getSmallestBullet = (text) => {
     let output = text.split(/\s/);
     output.shift(); // remove hypen then add later
@@ -443,67 +450,60 @@ class BulletOutputViewerBullet extends React.Component {
     let bullet = this.state.bulletText;
     if (bullet === null) { return; }
     this.processing = true;
-    ////console.log("building bullet: ." + bullet);
+    console.log("building bullet: " + bullet);
+    bullet = this.getNormalBullet(bullet);
+    await this.setStateAsync({ bulletText: bullet });
+    let prevEval = this.evaluateBullet();
+    let prevBullet = bullet;
+    let grow = true;
 
-    let smallestBullet = this.getSmallestBullet(bullet);
-    await this.setStateAsync({ bulletText: smallestBullet })
-    let smallestBulletEval = this.evaluateBullet();
-
-    if (smallestBulletEval.widthDiff > 0) {
-
-      ////console.log("bullet to large: ." + bullet);
+    if(prevEval.widthDiff > -0.02 && prevEval.widthDiff < 0){
+      // We are withing 1mm already
+      console.log("Bullet Already Optimized")
       this.processed = true;
       this.processing = false;
-
+      this.setState({bulletText: bullet, optimized: true });
       return;
     }
 
-    ////console.log("phase 2 of bullet: ." + bullet);
-    let largestBullet = this.getLargestBullet(bullet);
-    await this.setStateAsync({ bulletText: largestBullet })
-    let largestBulletEval = this.evaluateBullet();
-
-    if (largestBulletEval.widthDiff <= 0) {
-      // Bullet optimized but it may not touch the line lol
-      ////console.log("Bullet with all large spaces: " + bullet);
-      this.processed = true;
-      this.processing = false;
-      return;
+    if(prevEval.widthDiff > 0){
+      // shrink bullet
+      console.log("Shrinking Bullet: " +  bullet)
+      grow = false;
+    }else{
+      console.log("Shrinking Bullet: " +  bullet)
     }
-
-    // If we made it here then we can work with this bullet more
-    ////console.log("can be optimized further: " + smallestBullet)
 
     let spaceIndexes = [];
 
     // Find position of all space chars
-    Array.from(smallestBullet).map((word, i) => {
+    Array.from(bullet).map((word, i) => {
       if (word.match(/\s/)) {
         spaceIndexes.push(i);
       }
       return;
     });
+    
     spaceIndexes.shift(); // remove the first space since we dont want to add one after hypen
-
+    
     let terminate = false;
-    let prevEval = smallestBulletEval;
-    let useIndexs = [];
+    let useIndex = [];
     let action = 0;
     let len = spaceIndexes.length;
-    let prevBullet = smallestBullet;
+    let optim = true;
 
     // Shuffel up the space replacement
     for (let i = 0; i < len; i++) {
       switch (action) {
-        case 0: useIndexs.push(spaceIndexes.shift()); 
+        case 0: useIndex.push(spaceIndexes.shift()); 
           break;// change space towards begining
 
-        case 1: useIndexs.push(spaceIndexes.pop());
+        case 1: useIndex.push(spaceIndexes.pop());
           break;// Chjange space towards end
 
         case 2: 
           let val = spaceIndexes.splice(Math.floor(spaceIndexes.length/2),1)
-          useIndexs.push(val[0]);
+          useIndex.push(val[0]);
           break; // Change space in the middle
 
         default:
@@ -514,40 +514,58 @@ class BulletOutputViewerBullet extends React.Component {
     }
 
     while (!terminate) {
-      if (useIndexs.length === 0) {
-        ////console.log("exhausted all index values")
+      if (useIndex.length === 0) {
+        console.log("exhausted all index values")
         terminate = true;
+        optim = false;
         continue;
       }
 
-      const space = (prevEval.widthDiff < 0) ? largeSpace : smallSpace;
+      const space = (grow) ? largeSpace : smallSpace;
 
       // Replace the index with the appropriate space char
-      let i = useIndexs.shift();
-      smallestBullet = smallestBullet.substring(0, i) + space + smallestBullet.substring(i + 1);
-      //console.log("new bullet iteration: " + smallestBullet);
+      let i = useIndex.shift();
+      bullet = bullet.substring(0, i) + space + bullet.substring(i + 1);
+      
       // Re-evalute the size attributes
-      await this.setStateAsync({ bulletText: smallestBullet });
+      await this.setStateAsync({ bulletText: bullet });
       let currentEval = this.evaluateBullet();
 
-      if (currentEval.widthDiff < 0) {
-        // Still room to go.
-        prevEval = currentEval;
-        prevBullet = smallestBullet;
-        continue;
+      if(grow){
+        // IF we are still short of the line
+        if (currentEval.widthDiff < 0) {
+          // Still room to go.
+          prevEval = currentEval;
+          prevBullet = bullet;
+          continue;
+        }
+        // If we past the line
+        if (currentEval.widthDiff > 0) {
+          // Grew to big keep the old bullet
+          bullet = prevBullet;
+          terminate = true;
+          optim = true;
+        }
+      }else{
+        
+        if (currentEval.widthDiff > 0) {
+          prevEval = currentEval;
+          prevBullet = bullet;
+          continue;
+        }
+        
+        if (currentEval.widthDiff < 0) {
+          optim = true;
+          terminate = true;
+        }
       }
-
-      if (currentEval.widthDiff > 0) {
-        // Grew to big keep the old bullet
-        smallestBullet = prevBullet;
-        terminate = true;
-      }
+      
     }
 
     // If we get here we should be optimized!
     this.processed = true;
     this.processing = false;
-    this.setState({ bulletText: smallestBullet, optimized: true });
+    this.setState({ bulletText: bullet, optimized: optim });
 
     return (bullet);
   }

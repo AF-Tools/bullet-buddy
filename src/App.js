@@ -19,7 +19,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      bulletInputText: "- Action section of bullet should go here; put the how/what you did in this part--bring it home w/ a great impact line\n- You can upload your orgs approved abbreviations list (click button up top); they will be highlighted and are expdble\n- This tool can optimize spacing; output will be red if the optimizer could not fix spacing with 2004 or 2006 Unicode spaces\n",
+      bulletInputText: "- Action section of bullet should go here; put the how/what you did in this part--bring it home w/ a great impact line\n- This tool can optimize spacing; output will be red if the optimizer could not fix spacing with 2004 or 2006 Unicode spaces",
       abbreviationData: [
         { value: "organizations", abbr: "orgs" },
         { value: "expandable", abbr: "expdble" },
