@@ -226,3 +226,7 @@ html{
   padding: 1px;
   margin: 0;
 } 
+.syn{
+  position: absolute;
+  background-color: blue;
+}

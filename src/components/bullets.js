@@ -217,10 +217,12 @@ class Bullet extends React.Component {
       let innerSeg = seg.split(/([/;,-])/);
       if (innerSeg.length === 1){
         output.push(seg);
+        output.push(' ');
       }else{
         innerSeg.map(s=>{
           if(s !== '') output.push(s);
         })
+        output.push(' ');
       }
     })
     return output;
@@ -235,15 +237,15 @@ class Bullet extends React.Component {
     return sentence;
   }
 
-  updateBullet = (text) => {
-    let words = this.tokenize(text);
-    return words;
-  }
+  // updateBullet = (text) => {
+  //   let words = this.tokenize(text);
+  //   return words;
+  // }
 
   changeWord = (newWord, i) => {
     let newBullet = this.tokenize(this.props.text);
     newBullet[i] = newWord;
-    this.props.updateBulletText(newBullet.join(' '), this.props.parentIndex);
+    this.props.updateBulletText(newBullet.join(''), this.props.parentIndex);
     //console.log("bullet change:" + newBullet.join(' '))
   }
 

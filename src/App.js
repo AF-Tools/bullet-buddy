@@ -31,6 +31,11 @@ class App extends React.Component {
       bulletType: "OPR",
       tabValue: 0,
       drawerOpen: false,
+      thesauresViewer:{
+        visibility:"hidden",
+        posX: 0,
+        posY: 0,
+      }
     };
     this.inputTextRef = React.createRef();
     this.handleTextAreaUpdate = this.handleTextAreaUpdate.bind(this);
@@ -101,6 +106,32 @@ class App extends React.Component {
     this.setState({ bulletInputText: text });
   }
 
+  handleSelect = (e) =>{
+    let selection = window.getSelection();
+
+    // Get position of text selection
+    let offsetStart = this.inputTextRef.current.selectionStart;
+    let offsetEnd = this.inputTextRef.current.selectionEnd;
+
+    // Get potion of selection in viewport
+    let x = e.nativeEvent.clientX;
+    let y = e.nativeEvent.clientY;
+
+    console.log("Start: " + offsetStart + "END: " + offsetEnd + " X: " +x + " Y: " + y);
+
+    if(offsetStart === offsetEnd){
+      this.setState({thesauresViewer: {visibility: "hidden"}});
+
+      return;
+    
+    } // We dont have a full word selected
+
+    // the xy coordinates will be where the mouse was upon click. This will be the center of the popup
+    // Set state of popup w/ [xy pos, word list]
+    let output = {visibility: "visible", posX: x, posY: y}
+    this.setState({thesauresViewer: output})
+  }
+
   bulletTypeChange = (e, newValue) => {
     let bulletTypes = ["OPR", "EPR", "AWD"];
     this.setState({ tabValue: newValue, bulletType: bulletTypes[newValue] });
@@ -141,7 +172,11 @@ class App extends React.Component {
             <Button size="small" variant="outlined" color="inherit" startIcon={<ViewListIcon/>} onClick={(e)=>this.toggleDrawer(e,true)}>Abbreviations</Button>
           </Toolbar>
         </AppBar>
-
+        {/* <div className="syn" style={{
+          visibility: this.state.thesauresViewer.visibility,
+          left:this.state.thesauresViewer.posX,
+          top:this.state.thesauresViewer.posY
+          }}>TH VIEWER</div> */}
         <Container className="content" maxWidth="xl">
           <Grid container justify="space-around">
             <Grid item xs={12} md={12} lg={12} xl={6} spacing={1} align="center">
@@ -154,6 +189,7 @@ class App extends React.Component {
                 value={this.state.bulletInputText}
                 rows={6}
                 onChange={(e) => this.handleTextAreaUpdate(e.target.value)}
+                onSelect={(e)=>this.handleSelect(e)}
                 className="bullet-input-text"
                 style={{
                   width: widthSettings[this.state.bulletType],
