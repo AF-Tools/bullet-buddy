@@ -70,9 +70,12 @@ html{
 .bullet-editor-word-editable{
   margin: 1px;
   cursor: pointer;
-  background-color: #c8abe99b;
+  border-radius: 3px;
   /* border: solid black 1px;
   border-radius: 3px; */
+}
+.bullet-editor-word-editable:hover{
+  background-color: rgba(0, 13, 128, 0.384);
 }
 .approved-abbreviation{
   margin: 1px;
@@ -190,13 +193,6 @@ html{
   to {opacity:1 ;}
 }
 
-.synonym-button{
-  padding: 2px;
-  
-}
-.synonym-button:hover{
-  background-color: sandybrown;
-}
 .highlight{
   background-color: yellow;
 }
@@ -226,7 +222,11 @@ html{
   padding: 1px;
   margin: 0;
 } 
-.syn{
-  position: absolute;
-  background-color: blue;
+
+.synonym-button{
+  padding: 2px;
+  
+}
+.synonym-button:hover{
+  background-color: sandybrown;
 }
