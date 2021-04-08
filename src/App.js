@@ -1,4 +1,5 @@
 import React from 'react';
+import Axios from 'axios';
 import AppBar from '@material-ui/core/AppBar';
 import Typography from '@material-ui/core/Typography';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -14,6 +15,8 @@ import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Drawer from '@material-ui/core/Drawer';
 import ViewListIcon from '@material-ui/icons/ViewList';
+import Units from './units.json';
+
 class App extends React.Component {
 
   constructor(props) {
@@ -32,9 +35,10 @@ class App extends React.Component {
       tabValue: 0,
       drawerOpen: false,
       thesauresViewer:{
-        visibility:"hidden",
+        visible: false,
         posX: 0,
         posY: 0,
+        wordList: null,
       }
     };
     this.inputTextRef = React.createRef();
@@ -107,29 +111,29 @@ class App extends React.Component {
   }
 
   handleSelect = (e) =>{
-    let selection = window.getSelection();
+    // let selection = window.getSelection();
 
-    // Get position of text selection
-    let offsetStart = this.inputTextRef.current.selectionStart;
-    let offsetEnd = this.inputTextRef.current.selectionEnd;
+    // // Get position of text selection
+    // let offsetStart = this.inputTextRef.current.selectionStart;
+    // let offsetEnd = this.inputTextRef.current.selectionEnd;
 
-    // Get potion of selection in viewport
-    let x = e.nativeEvent.clientX;
-    let y = e.nativeEvent.clientY;
+    // // Get potion of selection in viewport
+    // let x = e.nativeEvent.clientX;
+    // let y = e.nativeEvent.clientY;
 
-    console.log("Start: " + offsetStart + "END: " + offsetEnd + " X: " +x + " Y: " + y);
+    // console.log("Start: " + offsetStart + "END: " + offsetEnd + " X: " +x + " Y: " + y);
+    // console.log("word: " + selection.toString())
+    // if(offsetStart === offsetEnd){
+    //   this.setState({thesauresViewer: {visibility: false, wordList:null}});
 
-    if(offsetStart === offsetEnd){
-      this.setState({thesauresViewer: {visibility: "hidden"}});
-
-      return;
+    //   return;
     
-    } // We dont have a full word selected
+    // } // We dont have a full word selected
 
-    // the xy coordinates will be where the mouse was upon click. This will be the center of the popup
-    // Set state of popup w/ [xy pos, word list]
-    let output = {visibility: "visible", posX: x, posY: y}
-    this.setState({thesauresViewer: output})
+    // // Extract word from selection
+    // let word = selection.toString();
+    // //TODO check for multple words and reject
+    // word.trim();
   }
 
   bulletTypeChange = (e, newValue) => {
@@ -143,12 +147,21 @@ class App extends React.Component {
     this.setState({drawerOpen:v})
   }
   render() {
+
     const widthSettings = {
       AWD: '202.321mm',
       EPR: '202.321mm',
       OPR: '201.050mm',
     }
+
     const widthSetting = widthSettings[this.state.bulletType];
+
+    let synList = null;
+    if (this.state.thesauresViewer.wordList !== null) {
+      synList = this.state.thesauresViewer.wordList.map(syn =>
+        <li className="synonym-button" onClick={()=> this.handleSynonymSelect(syn)}>{syn}</li>
+      )
+    }
 
     return (
       <div id="root" className="root">
@@ -172,11 +185,7 @@ class App extends React.Component {
             <Button size="small" variant="outlined" color="inherit" startIcon={<ViewListIcon/>} onClick={(e)=>this.toggleDrawer(e,true)}>Abbreviations</Button>
           </Toolbar>
         </AppBar>
-        {/* <div className="syn" style={{
-          visibility: this.state.thesauresViewer.visibility,
-          left:this.state.thesauresViewer.posX,
-          top:this.state.thesauresViewer.posY
-          }}>TH VIEWER</div> */}
+
         <Container className="content" maxWidth="xl">
           <Grid container justify="space-around">
             <Grid item xs={12} md={12} lg={12} xl={6} spacing={1} align="center">
@@ -189,7 +198,6 @@ class App extends React.Component {
                 value={this.state.bulletInputText}
                 rows={6}
                 onChange={(e) => this.handleTextAreaUpdate(e.target.value)}
-                onSelect={(e)=>this.handleSelect(e)}
                 className="bullet-input-text"
                 style={{
                   width: widthSettings[this.state.bulletType],

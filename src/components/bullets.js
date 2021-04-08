@@ -11,7 +11,6 @@ class Word extends React.Component {
     super(props);
     this.state = {
       open: false,
-      anchorE1: null,
       synonyms: null,
       isEditable: null,
     };
@@ -19,12 +18,21 @@ class Word extends React.Component {
     this.handlePopoverClose = this.handlePopoverClose.bind(this);
     this.handlePopoverOpen = this.handlePopoverOpen.bind(this);
   }
+
   handlePopoverOpen = (event) => {
     this.setState({ open: true })
   };
 
   handlePopoverClose = () => {
     this.setState({ open: false })
+  }
+
+  handleHover = (event) =>{
+
+    // Change CSS
+
+    // Load synonyms and populate lists
+
   }
 
   isNotEditable = word => {
@@ -43,6 +51,7 @@ class Word extends React.Component {
   }
 
   getSynonyms = (word) => {
+
     ////console.log("Attempting to get synonyms for: " + word)
     Axios.get("https://api.datamuse.com/words?max=15&ml=" + word)
       .then(res => {
@@ -63,6 +72,7 @@ class Word extends React.Component {
       .catch(err => {
         //console.log(`ERR: ${JSON.toString(err)}`);
       });
+
   }
 
   componentDidMount() {
@@ -80,6 +90,7 @@ class Word extends React.Component {
       this.getSynonyms(this.props.value);
     }
   }
+
   render() {
     let word = this.props.value;
 
@@ -91,10 +102,13 @@ class Word extends React.Component {
     if (abbrvData !== null) {
 
       if (abbrvData.value.toLowerCase() === word.toLowerCase()) { // Abbreviable word
+        
         c = c + " abbreviable popup"
+        
         return (
           <span
             className={c}
+            key={"popup" + this.props.key}
             onMouseEnter={this.handlePopoverOpen}
             onMouseLeave={this.handlePopoverClose}
           >
@@ -139,7 +153,7 @@ class Word extends React.Component {
 
     if (this.isNotEditable(word)) {
       c = "bullet-editor-word popup";
-      return (<span className={c}>{word}</span>);
+      return (<span key={"word" + this.props.key} className={c}>{word}</span>);
     }
 
     c = c + " popup";
@@ -149,6 +163,7 @@ class Word extends React.Component {
       synList = this.state.synonyms.map(syn =>
         <li
           className="synonym-button"
+          key = {syn + this.props.parentIndex.toString()}
           onClick={() => this.props.changeWord(syn, this.props.parentIndex)}
         >{syn}</li>
       )
@@ -158,12 +173,13 @@ class Word extends React.Component {
 
       <span
         className={c}
+        key={"word"+this.props.key}
         onMouseEnter={this.handlePopoverOpen}
         onMouseLeave={this.handlePopoverClose}
 
       >
         {word}
-        <span className={this.state.open ? "popuptext show" : "popuptext"} >
+        <span key={"popup"+ this.props.key} className={this.state.open ? "popuptext show" : "popuptext"} >
           <ul className="popuptextlist">{synList}</ul>
         </span>
       </span>
@@ -237,11 +253,6 @@ class Bullet extends React.Component {
     return sentence;
   }
 
-  // updateBullet = (text) => {
-  //   let words = this.tokenize(text);
-  //   return words;
-  // }
-
   changeWord = (newWord, i) => {
     let newBullet = this.tokenize(this.props.text);
     newBullet[i] = newWord;
@@ -304,6 +315,7 @@ class BulletEditor extends React.Component {
     //console.log("bullet round 2: " + bullets[i])
     this.props.updateInputText(bullets.join('\n'));
   }
+
   onChange = (e, i) => {
 
     let c = e.nativeEvent.target.childNodes;
@@ -318,7 +330,9 @@ class BulletEditor extends React.Component {
 
     //console.log(window.getSelection())
   }
+
   render() {
+    let index = 0;
 
     return (
       <div>
@@ -326,12 +340,13 @@ class BulletEditor extends React.Component {
           {
             // Creat a bullet around each bullet
             this.state.bullets.map((bullet, i) => {
-
+              index += 1; 
               return (
                 <span
                   ref={this.ref}
+                  key = {"span" + index.toString()}
                   className="bullet-editor-bullet">
-                  <Bullet text={bullet} updateBulletText={this.updateBulletText} parentIndex={i} abbreviationData={this.props.abbreviationData} />
+                  <Bullet key={"bullet" + index.toString() + i.toString()} text={bullet} updateBulletText={this.updateBulletText} parentIndex={i} abbreviationData={this.props.abbreviationData} />
                 </span>
               );
             })
@@ -340,7 +355,6 @@ class BulletEditor extends React.Component {
         <div className="legend">Legend: 
           <span className="approved-abbreviation">Approved Abbreviation</span>
           <span className="abbreviable">Abbreviable Word</span>
-          <span className="bullet-editor-word-editable">Synonyms Available</span>
         </div>
       </div>
       
@@ -675,6 +689,7 @@ class BulletOutputViewer extends React.Component {
                   width={this.props.width}
                   bulletText={bullet}
                   index={i}
+                  key={i.toString()}
                   handleBulletChange={this.handleBulletChange}
 
                 />);
